@@ -1,0 +1,373 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>XyrooModz Downloader</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        instagram: '#e1306c',
+                        instagramDark: '#c13584',
+                        tiktok: '#69C9D0',
+                        tiktokDark: '#4A9CA8'
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+        .pulse {
+            animation: pulse 1.5s infinite;
+        }
+        .platform-btn {
+            transition: all 0.3s ease;
+        }
+        .platform-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+        }
+        .platform-btn.active {
+            transform: translateY(-4px);
+            box-shadow: 0 6px 16px rgba(0,0,0,0.2);
+        }
+    </style>
+</head>
+<body class="bg-gray-50 min-h-screen">
+    <div class="max-w-4xl mx-auto p-4">
+        <!-- Header -->
+        <div class="text-center mb-8">
+            <div class="inline-flex items-center justify-center w-16 h-16 bg-gradient-to-r from-blue-500 to-purple-600 rounded-full mb-4">
+                <i class="fas fa-download text-white text-3xl"></i>
+            </div>
+            <h1 class="text-3xl font-bold text-gray-800 mb-2">XyrooModz Downloader</h1>
+            <p class="text-gray-600">Download Video From Instagram & TikTok</p>
+        </div>
+
+        <!-- Platform Selection -->
+        <div class="flex justify-center space-x-4 mb-8">
+            <button 
+                id="instagramBtn" 
+                class="platform-btn bg-gradient-to-r from-instagram to-instagramDark hover:from-instagramDark hover:to-instagram text-white px-6 py-3 rounded-lg font-medium flex items-center space-x-2 shadow-md"
+            >
+                <i class="fab fa-instagram"></i>
+                <span>Instagram</span>
+            </button>
+            <button 
+                id="tiktokBtn" 
+                class="platform-btn bg-gradient-to-r from-tiktok to-tiktokDark hover:from-tiktokDark hover:to-tiktok text-white px-6 py-3 rounded-lg font-medium flex items-center space-x-2 shadow-md"
+            >
+                <i class="fab fa-tiktok"></i>
+                <span>TikTok</span>
+            </button>
+        </div>
+
+        <!-- URL Input Form -->
+        <div class="bg-white rounded-xl shadow-lg p-6 mb-8">
+            <form id="downloadForm" class="space-y-4">
+                <div>
+                    <label for="socialUrl" class="block text-sm font-medium text-gray-700 mb-2">
+                        <span id="platformLabel">Social Media</span> Video URL
+                    </label>
+                    <div class="flex space-x-2">
+                        <input 
+                            type="url" 
+                            id="socialUrl" 
+                            placeholder="https://www.instagram.com/reel/..." 
+                            class="flex-1 px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-all"
+                            required
+                        >
+                        <button 
+                            type="submit" 
+                            id="downloadBtn"
+                            class="bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white px-6 py-3 rounded-lg font-medium transition-all transform hover:scale-105 shadow-md hover:shadow-lg"
+                        >
+                            Download
+                        </button>
+                    </div>
+                </div>
+            </form>
+        </div>
+
+        <!-- Loading State -->
+        <div id="loading" class="hidden">
+            <div class="bg-white rounded-xl shadow-lg p-8 text-center">
+                <div class="inline-flex items-center justify-center w-12 h-12 bg-blue-100 rounded-full mb-4">
+                    <div class="w-6 h-6 border-2 border-blue-500 border-t-transparent rounded-full animate-spin"></div>
+                </div>
+                <h3 class="text-lg font-semibold text-gray-800 mb-2">Processing...</h3>
+                <p class="text-gray-600">Fetching your video from <span id="loadingPlatform">Social Media</span></p>
+            </div>
+        </div>
+
+        <!-- Error State -->
+        <div id="error" class="hidden">
+            <div class="bg-red-50 border-l-4 border-red-500 p-4 rounded-lg">
+                <div class="flex">
+                    <div class="flex-shrink-0">
+                        <i class="fas fa-exclamation-circle text-red-500 text-lg"></i>
+                    </div>
+                    <div class="ml-3">
+                        <p class="text-sm text-red-700" id="errorMessage">Error message will appear here</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Result Display -->
+        <div id="result" class="hidden">
+            <div class="bg-white rounded-xl shadow-lg overflow-hidden">
+                <div class="p-6">
+                    <h3 class="text-xl font-semibold text-gray-800 mb-4">Your Video is Ready!</h3>
+                    
+                    <!-- Thumbnail Preview -->
+                    <div class="mb-6">
+                        <img 
+                            id="thumbnail" 
+                            src="" 
+                            alt="Video thumbnail" 
+                            class="w-full max-h-80 object-cover rounded-lg shadow-md"
+                        >
+                    </div>
+                    
+                    <!-- Video Info -->
+                    <div id="videoInfo" class="mb-6 text-sm text-gray-600">
+                        <!-- Info will be populated here -->
+                    </div>
+                    
+                    <!-- Download Button -->
+                    <div class="flex flex-col sm:flex-row gap-3">
+                        <a 
+                            id="downloadLink" 
+                            href="#" 
+                            download 
+                            class="flex-1 bg-green-600 hover:bg-green-700 text-white px-6 py-3 rounded-lg font-medium text-center transition-colors duration-200 flex items-center justify-center space-x-2"
+                        >
+                            <i class="fas fa-download"></i>
+                            <span>Download Video</span>
+                        </a>
+                        <button 
+                            id="copyLinkBtn"
+                            class="flex-1 bg-gray-600 hover:bg-gray-700 text-white px-6 py-3 rounded-lg font-medium transition-colors duration-200 flex items-center justify-center space-x-2"
+                        >
+                            <i class="fas fa-copy"></i>
+                            <span>Copy Link</span>
+                        </button>
+                    </div>
+                    
+                    <!-- Direct Link -->
+                    <div class="mt-4">
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Direct Download Link</label>
+                        <div class="flex space-x-2">
+                            <input 
+                                type="text" 
+                                id="directLink" 
+                                readonly 
+                                class="flex-1 px-3 py-2 border border-gray-300 rounded-lg bg-gray-50 text-sm"
+                            >
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- How to Use Section -->
+        <div class="mt-12 bg-white rounded-xl shadow-lg p-6">
+            <h3 class="text-xl font-semibold text-gray-800 mb-4">How to Use</h3>
+            <div class="space-y-3">
+                <div class="flex items-start space-x-3">
+                    <div class="flex-shrink-0 w-6 h-6 bg-blue-500 text-white rounded-full flex items-center justify-center text-sm font-bold">1</div>
+                    <p class="text-gray-600">Select the platform (Instagram or TikTok) you want to download from</p>
+                </div>
+                <div class="flex items-start space-x-3">
+                    <div class="flex-shrink-0 w-6 h-6 bg-blue-500 text-white rounded-full flex items-center justify-center text-sm font-bold">2</div>
+                    <p class="text-gray-600">Copy the video URL from your browser's address bar</p>
+                </div>
+                <div class="flex items-start space-x-3">
+                    <div class="flex-shrink-0 w-6 h-6 bg-blue-500 text-white rounded-full flex items-center justify-center text-sm font-bold">3</div>
+                    <p class="text-gray-600">Paste the URL above and click "Download"</p>
+                </div>
+                <div class="flex items-start space-x-3">
+                    <div class="flex-shrink-0 w-6 h-6 bg-blue-500 text-white rounded-full flex items-center justify-center text-sm font-bold">4</div>
+                    <p class="text-gray-600">Click the download button to save the video to your device</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Footer -->
+        <div class="text-center mt-8 text-gray-500 text-sm">
+            <p>© 2025 | XyrooModz Downloader</p>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Platform state
+            let currentPlatform = 'instagram';
+            
+            // DOM Elements
+            const instagramBtn = document.getElementById('instagramBtn');
+            const tiktokBtn = document.getElementById('tiktokBtn');
+            const platformLabel = document.getElementById('platformLabel');
+            const socialUrl = document.getElementById('socialUrl');
+            const form = document.getElementById('downloadForm');
+            const loading = document.getElementById('loading');
+            const loadingPlatform = document.getElementById('loadingPlatform');
+            const error = document.getElementById('error');
+            const errorMessage = document.getElementById('errorMessage');
+            const result = document.getElementById('result');
+            const thumbnail = document.getElementById('thumbnail');
+            const downloadLink = document.getElementById('downloadLink');
+            const directLink = document.getElementById('directLink');
+            const copyLinkBtn = document.getElementById('copyLinkBtn');
+            const downloadBtn = document.getElementById('downloadBtn');
+            const videoInfo = document.getElementById('videoInfo');
+
+            // Platform selection
+            function setPlatform(platform) {
+                currentPlatform = platform;
+                instagramBtn.classList.toggle('active', platform === 'instagram');
+                tiktokBtn.classList.toggle('active', platform === 'tiktok');
+                
+                // Update labels and placeholders
+                if (platform === 'instagram') {
+                    platformLabel.textContent = 'Instagram';
+                    socialUrl.placeholder = 'https://www.instagram.com/reel/...';
+                    socialUrl.value = '';
+                } else {
+                    platformLabel.textContent = 'TikTok';
+                    socialUrl.placeholder = 'https://www.tiktok.com/@username/video/...';
+                    socialUrl.value = '';
+                }
+            }
+
+            // Event listeners for platform buttons
+            instagramBtn.addEventListener('click', () => setPlatform('instagram'));
+            tiktokBtn.addEventListener('click', () => setPlatform('tiktok'));
+
+            // Initialize with Instagram
+            setPlatform('instagram');
+
+            // Form submission
+            form.addEventListener('submit', async function(e) {
+                e.preventDefault();
+                const url = socialUrl.value.trim();
+                
+                // Reset states
+                loading.classList.remove('hidden');
+                error.classList.add('hidden');
+                result.classList.add('hidden');
+                downloadBtn.disabled = true;
+                downloadBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Processing...';
+                loadingPlatform.textContent = currentPlatform.charAt(0).toUpperCase() + currentPlatform.slice(1);
+
+                try {
+                    // Validate URL based on platform
+                    if (currentPlatform === 'instagram' && !url.includes('instagram.com')) {
+                        throw new Error('Please enter a valid Instagram URL');
+                    }
+                    if (currentPlatform === 'tiktok' && !url.includes('tiktok.com')) {
+                        throw new Error('Please enter a valid TikTok URL');
+                    }
+
+                    let data;
+                    let videoUrl;
+                    let thumbnailUrl;
+                    let authorName = '';
+                    let musicTitle = '';
+
+                    if (currentPlatform === 'instagram') {
+                        // Instagram API
+                        const instagramApiUrl = `https://api.elrayyxml.web.id/api/downloader/instagram?url=${encodeURIComponent(url)}`;
+                        const instagramResponse = await fetch(instagramApiUrl);
+                        const instagramData = await instagramResponse.json();
+                        
+                        if (!instagramData.status || !instagramData.result || instagramData.result.length === 0) {
+                            throw new Error('Failed to fetch Instagram video. Please check the URL and try again.');
+                        }
+                        
+                        const videoData = instagramData.result[0];
+                        videoUrl = videoData.url;
+                        thumbnailUrl = videoData.thumbnail;
+                        authorName = 'Instagram User';
+                    } else {
+                        // TikTok API
+                        const tiktokApiUrl = `https://api.nekolabs.my.id/downloader/tiktok?url=${encodeURIComponent(url)}`;
+                        const tiktokResponse = await fetch(tiktokApiUrl);
+                        const tiktokData = await tiktokResponse.json();
+                        
+                        if (!tiktokData?.success || !tiktokData?.result) {
+                            throw new Error('Failed to fetch TikTok video. Please check the URL and try again.');
+                        }
+                        
+                        data = tiktokData.result;
+                        
+                        // Handle TikTok slide photos
+                        if (data.images && data.images.length > 0) {
+                            // For simplicity, we'll show the first image as thumbnail
+                            thumbnailUrl = data.images[0];
+                            videoUrl = data.images[0]; // This would need special handling for multiple images
+                            authorName = data.author?.name || 'TikTok User';
+                            musicTitle = data.music_info?.title || 'Unknown Music';
+                        } else {
+                            // Handle TikTok video
+                            videoUrl = data.videoUrl;
+                            thumbnailUrl = data.thumbnail || data.cover || '';
+                            authorName = data.author?.name || 'TikTok User';
+                            musicTitle = data.music_info?.title || 'Unknown Music';
+                        }
+                        
+                        if (!videoUrl) {
+                            throw new Error('No video found in the TikTok post.');
+                        }
+                    }
+
+                    // Update result display
+                    thumbnail.src = thumbnailUrl || 'https://placehold.co/600x400/gray/white?text=No+Thumbnail';
+                    downloadLink.href = videoUrl;
+                    directLink.value = videoUrl;
+
+                    // Update video info
+                    let infoHTML = `<strong>👤 Creator:</strong> ${authorName}`;
+                    if (musicTitle && currentPlatform === 'tiktok') {
+                        infoHTML += `<br><strong>🎶 Music:</strong> ${musicTitle}`;
+                    }
+                    videoInfo.innerHTML = infoHTML;
+
+                    // Show result
+                    result.classList.remove('hidden');
+                    
+                } catch (err) {
+                    errorMessage.textContent = err.message || 'An error occurred while processing your request';
+                    error.classList.remove('hidden');
+                } finally {
+                    loading.classList.add('hidden');
+                    downloadBtn.disabled = false;
+                    downloadBtn.innerHTML = 'Download';
+                }
+            });
+
+            // Copy link functionality
+            copyLinkBtn.addEventListener('click', function() {
+                directLink.select();
+                document.execCommand('copy');
+                
+                // Show feedback
+                const originalText = copyLinkBtn.innerHTML;
+                copyLinkBtn.innerHTML = '<i class="fas fa-check"></i> Copied!';
+                setTimeout(() => {
+                    copyLinkBtn.innerHTML = originalText;
+                }, 2000);
+            });
+        });
+    </script>
+</body>
+</html>
