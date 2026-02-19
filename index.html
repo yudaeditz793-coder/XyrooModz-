@@ -197,38 +197,45 @@
                 downloadBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Processing...';
 
                 try {
-                    // Validate Instagram URL
-                    if (!url.includes('instagram.com')) {
-                        throw new Error('Please enter a valid Instagram URL');
-                    }
+    if (!url.includes('instagram.com')) {
+        throw new Error('Link IG-nya salah.');
+    }
 
-                    // API endpoint
-                    const apiUrl = `https://api.elrayyxml.web.id/api/downloader/instagram?url=${encodeURIComponent(url)}`;
-                    
-                    const response = await fetch(apiUrl);
-                    const data = await response.json();
+    const apiUrl = `https://api.deline.web.id/downloader/ig?url=${encodeURIComponent(url)}`;
+    const response = await fetch(apiUrl);
+    const data = await response.json();
 
-                    if (!data.status || !data.result || data.result.length === 0) {
-                        throw new Error('Failed to fetch video. Please check the URL and try again.');
-                    }
+    if (!data.status || !data.result || !data.result.media) {
+        throw new Error('API gagal. Bukan salah gw.');
+    }
 
-                    const videoData = data.result[0];
-                    
-                    // Update result display
-                    thumbnail.src = videoData.thumbnail;
-                    downloadLink.href = videoData.url;
-                    directLink.value = videoData.url;
+    const videos = data.result.media.videos || [];
 
-                    // Show result
-                    result.classList.remove('hidden');
-                    
-                } catch (err) {
-                    errorMessage.textContent = err.message || 'An error occurred while processing your request';
-                    error.classList.remove('hidden');
-                } finally {
-                    loading.classList.add('hidden');
-                    downloadBtn.disabled = false;
-                    downloadBtn.innerHTML = 'Download';
+    if (videos.length === 0) {
+        throw new Error('Hanya Video!!');
+    }
+
+    // bersihin hasil lama
+    result.innerHTML = '';
+
+    // tampilkan video saja
+    videos.forEach((vid, i) => {
+        result.innerHTML += `
+          <div class="media-item">
+            <a href="${vid}" target="_blank">Download Video ${i + 1}</a>
+          </div>
+        `;
+    });
+
+    result.classList.remove('hidden');
+
+} catch (err) {
+    errorMessage.textContent = err.message || 'Error gak jelas';
+    error.classList.remove('hidden');
+} finally {
+    loading.classList.add('hidden');
+    downloadBtn.disabled = false;
+    downloadBtn.innerHTML = 'Download';
                 }
             });
 
